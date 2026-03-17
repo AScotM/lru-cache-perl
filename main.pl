@@ -23,12 +23,10 @@ sub new {
 sub _remove_node {
     my ($self, $node) = @_;
     
-    if ($node->{prev}) {
-        $node->{prev}->{next} = $node->{next};
-    }
-    if ($node->{next}) {
-        $node->{next}->{prev} = $node->{prev};
-    }
+    return unless $node->{prev} && $node->{next};
+    
+    $node->{prev}->{next} = $node->{next};
+    $node->{next}->{prev} = $node->{prev};
     
     $node->{prev} = undef;
     $node->{next} = undef;
@@ -74,6 +72,7 @@ sub get {
 
 sub put {
     my ($self, $key, $value) = @_;
+    die "Key and value are required" if not defined $key or not defined $value;
     
     my $node = $self->{cache}->{$key};
     if ($node) {
@@ -95,6 +94,16 @@ sub put {
     
     $self->{cache}->{$key} = $new_node;
     $self->_add_to_head($new_node);
+}
+
+sub set_capacity {
+    my ($self, $new_capacity) = @_;
+    die "Capacity must be positive" if $new_capacity <= 0;
+    
+    while (keys %{$self->{cache}} > $new_capacity) {
+        $self->_remove_lru();
+    }
+    $self->{capacity} = $new_capacity;
 }
 
 sub debug_print {
