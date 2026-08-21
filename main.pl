@@ -38,9 +38,7 @@ sub _add_to_head {
     $node->{prev} = $self->{head};
     $node->{next} = $self->{head}->{next};
     
-    if ($self->{head}->{next}) {
-        $self->{head}->{next}->{prev} = $node;
-    }
+    $self->{head}->{next}->{prev} = $node;
     $self->{head}->{next} = $node;
 }
 
@@ -64,7 +62,7 @@ sub get {
     my ($self, $key) = @_;
     
     my $node = $self->{cache}->{$key};
-    return undef unless $node;
+    return unless $node;  # Returns undef for missing keys
     
     $self->_move_to_head($node);
     return $node->{value};
@@ -120,12 +118,13 @@ sub debug_print {
     print "\n";
 }
 
-sub DESTROY {
-    my ($self) = @_;
-    %{$self->{cache}} = ();
-}
+# DESTROY removed - not needed
+
+1;
 
 package main;
+use strict;  # Added
+use warnings;  # Added
 
 my $cache = LRUCache->new(2);
 
@@ -182,5 +181,3 @@ if (defined $val) {
 } else {
     print "Get(4): miss\n";
 }
-
-1;
